@@ -1,5 +1,10 @@
 <script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
-<script>sagecell.makeSagecell({"inputLocation": ".sage"});</script>
+<script>sagecell.makeSagecell({inputLocation:  '#mycell',
+                       template:       sagecell.templates.minimal,
+                       hide: ["editor","evalButton"],
+                       autoeval: true});</script>
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -57,10 +62,7 @@
 
 <div class="sage">
   <script type="text/x-sage">
-sagecell.makeSagecell({inputLocation:  '#mycell',
-                       template:       sagecell.templates.minimal,
-                       hide: ["editor","evalButton"],
-                       autoeval: true});
+
 import numpy as np
 import math
 
