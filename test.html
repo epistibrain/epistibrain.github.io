@@ -56,8 +56,11 @@
               See my <a href="CVCCOX_1_1_21-1.pdf">CV</a> for more details.</p>
 
 <div class="sage">
-  <script type="text/x-sage", hide: "editor">
-
+  <script type="text/x-sage">
+sagecell.makeSagecell({inputLocation:  '#mycell',
+                       template:       sagecell.templates.minimal,
+                       hide: ["editor","evalButton"],
+                       autoeval: true});
 import numpy as np
 import math
 
