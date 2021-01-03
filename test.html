@@ -56,7 +56,152 @@
               See my <a href="CVCCOX_1_1_21-1.pdf">CV</a> for more details.</p>
 
 <div class="sage">
-  <script type="text/x-sage">1+2</script>
+  <script type="text/x-sage">
+  # we import the python package numpy to use for our matrix calculation
+# "as np" allows us to use the shortcut np instead of numpy
+import numpy as np
+import math
+
+# The graphics file where we store the images
+graph=Graphics()
+graphvpp=Graphics()
+
+#a 3X3 matrix that that rotates the second and third coordinates by rotation_angle
+# This will be used to change from the coordinates at the wall to standard coordinates
+def rotation(rotation_angle):  
+    return np.matrix([[-1,0,0],[0,cos(rotation_angle),-sin(rotation_angle)],[0,sin(rotation_angle),cos(rotation_angle)]])
+
+
+# This gives the collision transformation in coodinates with the normal upward in the direction of the third coordinate
+# First coordinate is rotational velocity, second tangential, and third is normal
+# This might look unnecessarily complicated Notice we have g=gamma=0, which makes it very simple
+def reflection(g):
+    return np.matrix([[-(1-g^2)/(1+g^2),-2*g/(1+g^2),0],[-2*g/(1+g^2),(1-g^2)/(1+g^2),0],[0,0,-1]])
+
+
+# This finds the new position, given by the next collision point
+# state=the current state, one row of the states matrix
+# g is the mass disribution, always zero for now
+
+def new_pos(state,e):
+    #print(state)
+    A=RR((1-e)*(state[4])^2+(state[5])^2)
+    B=RR(2*(1-e)*(state[1]*state[4])+2*state[2]*state[5])
+    C=RR((1-e)*(state[1])^2+(state[2])^2)+(e-1)
+    #print(A,B,C)
+    t=RR((-B+(B^2-4*A*C)^.5)/(2*A))
+    state=[state[0]+t*state[3],state[1]+t*(state[4]),state[2]+t*(state[5]),state[3],state[4],state[5]]
+    return state
+
+
+
+def normalshift(x,y,e):
+    if y>0:
+        if x<0:
+            return RR(-pi/2-arctan(y/(x*(1-e))))
+        if x>0:
+            return RR(-arctan(y/(x*(1-e)))+pi/2)
+        else:
+            return RR(0)
+    if y<0:
+        if x<0:
+            return RR(-pi/2-arctan(y/(x*(1-e))))
+        if x>0:
+            return RR(-arctan(y/(x*(1-e)))+pi/2)
+        else:
+            return RR(pi)
+    else:
+        if x<0:
+            return RR(-pi/2)
+        else:
+            return RR(pi/2)
+
+# This finds the new velocity after the collision
+# state=the current state, one row of the states matrix
+# g is the mass disribution, always zero for now
+# e=eccentricity squared
+def new_vel(state,g,e):
+    normal_angle=normalshift(state[1],state[2],e)
+    #print(normal_angle)
+    #OLD:normal_angle=RR(arctan(state[2]/(state[1]*(1-e)))-pi/2)
+    #print(normal_angle)
+    velocity=np.matrix([ [state[3] ],[state[4] ],[state[5] ] ])
+    # To get the new velocity, we rotate to standard position, apply the collision matrix, then rotate back
+    velocity_rel=reflection(g)*rotation(normal_angle)*velocity
+    velocity=rotation(-normal_angle)*reflection(g)*rotation(normal_angle)*velocity
+    state=[state[0],state[1],state[2],velocity[0,0],velocity[1,0],velocity[2,0],velocity_rel[1,0],velocity_rel[2,0]]
+    return state
+
+# Each iteration involves finding the new position and then finding the new velocity after the collision
+# state=the current state, one row of the states matrix
+# g is the mass disribution, always zero for now
+# e=eccentricity squared
+def F(state, g,e):
+    state=new_pos(state, e)
+    
+    state=new_vel(state, g,e)
+    return state
+
+
+# The following two features allow varying the collision model and mass distribution 
+# collision_type=selector(['Specular','No-Slip'],buttons=True)
+# gamma=slider(0,1,label="mass distribution",default=1/2^.5),
+# spin=slider(-1,1,default=0, label="angular velocity"),
+# (They are not implemented correctly yet, so they are here)
+
+# This allows us to run interactively, changing the parameters
+@interact
+def ellipse_billiard(ec=slider(0,0.999, label="square of eccentricity",default=0), collisions=slider(4,2000, label="collisions", step_size=1, default=100), x0=slider(-1,1,default=0.2,label="starting position x"), y0=slider(-1,1,default=-0.20000,label="starting position y"), theta=slider(0,RR(2*pi), default=0, label="starting angle theta"),spin=slider(-1,1,label="spin",default=0),  gamma = slider(0,1,label='gamma', default = 1/math.sqrt(2)), show_graph=True, show_vpp=False, show_focus=True, auto_update=False):
+ 
+    #no slip with energy constant at 2
+    vx = cos(theta)
+    vy = sin(theta)
+    E = vx^2 + vy^2 + spin^2
+    spin = spin/math.sqrt(E)
+    vx = vx/math.sqrt(E)
+    vy = vy/math.sqrt(E) 
+    graph = ellipse((0, 0), 1, RR((1-ec)^.5)) #Note that ec=eccentricity squared
+    graphvpp = circle((0,0),1, color='grey')
+    graph+= point((x0,y0), color='green', size=30) #records the starting point
+    
+    assert x0^2+y0^2/(1-ec)<1
+    # Note that nothing prevents you from choosing a starting point outside the ellipse, you just get this warning
+    #print("WARNING! WARNING! Outside of the ellipse!")
+    #graph.show(axes=False)
+    #return False
+    if show_focus==True:
+        graph+= point((-sqrt(ec),0), color='red', size=50)
+        graph+= point((sqrt(ec),0), color='red', size=50)
+    # row=collision number, column=[rotation,x,y,spin,vx,vy]
+    # Note that the states are set up to handle rotation, though we aren't using them yet
+    states=np.zeros(shape=(collisions,8))
+    xf=0 #x velocity in frame
+    yf=0 #y velocity in frame
+    states[0]=[0,x0,y0,spin,vx,vy,xf,yf]
+    
+    for i in range(0,collisions-1):
+        # This updates the states--the actual running of the billiards is through this
+        # The details are hidden in the definition of F above
+        states[i+1]=F(states[i], gamma, ec)
+
+    for j in range(0,collisions-1):
+        if (-1)^j>0:
+            curcol='blue'
+        else:
+            curcol='red'
+        graph+=plot(line([(states[j,1],states[j,2]),(states[j+1,1],states[j+1,2])],color=curcol))
+    
+
+    
+    if show_graph:
+        graph.show(axes=False)
+        
+    if show_vpp:
+        for j in range(0,collisions-1):
+            graphvpp+=point((states[j,6],states[j,3]),color='blue',size=10)
+        graphvpp.show(axes=False)
+  
+  </script>
 </div>
               
 <h2 id="research">Research</h2>
