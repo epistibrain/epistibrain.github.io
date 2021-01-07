@@ -511,7 +511,7 @@ def wall_collide(pos,vel,wall):
         y0=wall[1]
         xe=wall[2]
         ye=wall[3]
-        if vel[0]<>0:
+        if vel[0]!=0:
             vx=vel[0]
         else:
             vx=0.0000000000001
@@ -604,7 +604,7 @@ def wall_collide(pos,vel,wall):
         x1=(-B+(B^2-4*A*c)^(1/2))/(2*A)
         x2=(-B-(B^2-4*A*c)^(1/2))/(2*A)
         # This handles the cases where the trajectory misses the circle entirely
-        if x1.imag()<>0:
+        if x1.imag()!=0:
             return (0,0,large+1)
         #if x2.real==False:
         #    return (0,0,large+1)
@@ -838,7 +838,7 @@ def Billiardp(wall_segments, N_max, draw, p, v):
         ####graph=graph+pathgraph
         
         if Pwall>7:
-            # and Pwall<>2 and Pwall<>4 and Pwall<>6:
+            # and Pwall!=2 and Pwall!=4 and Pwall!=6:
             y=phaseangle(wall_segments[Pwall[0,0]],V1[0,0],V2[0,0],P1[0,0],P2[0,0])
             x=wallparam(Pwall[0,0],wall_segments[Pwall[0,0]],P1[0,0],P2[0,0])
             #print(cos(V0[0,0])*sin(y),sin(V0[0,0])*sin(y))
@@ -1044,7 +1044,7 @@ graph.show(aspect_ratio=1, axes=False, figsize=10)
 
 
 @interact
-def f(BilliardTable=selector(['square',  'triangle', 'pentagon', 'circle', 'ellipse'],buttons=True,  label='Select billiard table shape'),  MassType=selector(['Point Mass',  'Uniform', 'Hollow'], buttons=True,  label='Select mass distribution of ball'), Collisions=selector([2,  5, 10, 50, 100, 500, 10000],buttons=True,  label='Number of Collisions'), angle=selector([-85, -70, -45,  -20, -10, -5, 0, 5, 10, 20, 45, 70, 85],buttons=True,  label='Angle in Degrees'),spin=1,  auto_update=True):
+def f(BilliardTable=selector(['square',  'triangle', 'pentagon', 'circle', 'ellipse'],buttons=True,  label='Select billiard table shape'),  MassType=selector(['Point Mass',  'Uniform', 'Hollow'], buttons=True,  label='Select mass distribution of ball'), Collisions=selector([2,  5, 10, 50, 100, 500, 2000],buttons=True,  label='Number of Collisions'), angle=selector([-70, -45,  -23, -10, -5, 0, 5, 10, 23, 45, 70],buttons=True,  label='Angle in Degrees'),spin=slider(-5,5,step_size=.2, default=0, label='Spin of the ball'), auto_update=True):
     
     if MassType=='Point Mass':
         gamma=0
@@ -1057,7 +1057,7 @@ def f(BilliardTable=selector(['square',  'triangle', 'pentagon', 'circle', 'elli
         thet=angle*2*np.pi/360
     else:
         thet=0
-    if BilliardTable<>'circle' and BilliardTable<>'ellipse':
+    if BilliardTable!='circle' and BilliardTable!='ellipse':
         if BilliardTable=='rectangle':
             table=ngonthr(4,0)
             x0=-RR(np.cos(pi/5))
@@ -1080,19 +1080,22 @@ def f(BilliardTable=selector(['square',  'triangle', 'pentagon', 'circle', 'elli
         graph2+=arrow((x0,0), (x0+.2*RR(cos(thet)),.2*RR(sin(thet))) ,color='red',width=5,zorder=5,arrowsize=9)
         graph2.show(aspect_ratio=1, axes=False, figsize=10)
     else:
+        Collisions=Collisions+1
         if BilliardTable=='circle':
             ec=0
+            y0=-.999999999
         else:
             ec=.5
-        vx = RR(cos(thet+pi/2))
-        vy = RR(sin(thet+pi/2))
-        E = vx^2 + vy^2 + spin^2
+            y0=RR(-1/2^.5+.0000001) 
+        vx1 = RR(cos(thet+pi/2))
+        vy1 = RR(sin(thet+pi/2))
+        E = vx1^2 + vy1^2 + spin^2
         spin = spin/math.sqrt(E)
-        vx = vx/math.sqrt(E)
-        vy = vy/math.sqrt(E)
+        vx = vx1/math.sqrt(E)
+        vy = vy1/math.sqrt(E)
         x0=0
-        y0=RR(-1/2^.5+.0000001) 
-        graphEll = ellipse((0, 0), 1, RR((1-ec)^.5)) #Note that ec=eccentricity squared
+        
+        graphEll = ellipse((0, 0), 1, RR((1-ec)^.5), color=BorderColor, thickness=6) #Note that ec=eccentricity squared
         #graphvpp = circle((0,0),1, color='grey')
         #graph+= point((x0,y0), color=BorderColor, size=30) #records the starting point
         
@@ -1122,12 +1125,13 @@ def f(BilliardTable=selector(['square',  'triangle', 'pentagon', 'circle', 'elli
             else:
                 curcol='red'
             graphEll+=plot(line([(states[j,1],states[j,2]),(states[j+1,1],states[j+1,2])],color=curcol))
+        graphEll+=arrow((x0,y0), (x0+vx1/3,y0+vy1/3) ,color='red',width=5,zorder=5,arrowsize=9)
         
         graphEll.show(axes=False)
         
 #################################################
 ###### Introduction to Billiards: End ###########
-#################################################        
+#################################################     
   
   </script>
 </div>
