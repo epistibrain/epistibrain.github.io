@@ -74,9 +74,6 @@
 ###### Introduction to Billiards ################
 #################################################
 
-
-
-
 import numpy as np
 import math
 
@@ -89,7 +86,7 @@ TrajColor='midnightblue'
 
 # The graphics file where we store the images
 graph=Graphics()
-graphvpp=Graphics()
+
 
 #a 3X3 matrix that that rotates the second and third coordinates by rotation_angle
 # This will be used to change from the coordinates at the wall to standard coordinates
@@ -192,14 +189,9 @@ def rot(x):
     return matrix(RR,[[-1,0,0],[0,cos(x),-sin(x)],[0,sin(x),cos(x)]])
 
 
-pp=1
-qq=11
-
 def f2(p,q):
     # gives lambda, required mass distribution, for given rotation angle  
     return (2-(2+2*(cos(2*pi*p/q)))^.5)^-.5
-
-#print(RR(f2(pp,qq)))
 
 def gamm(la):
     return (4*la^2-1)^.5
@@ -209,14 +201,6 @@ def aa(gam):
     
 def bb(gam):
     return 2*gam/(1+gam^2)
-
-#Rthd = RealField(10000,rnd='RNDD')
-
-#a=RR(aa(gamm(f2(pp,qq))))
-#b=RR(bb(gamm(f2(pp,qq))))
-
-#a=RR(aa(1/2^.5))
-#b=RR(bb(1/2^.5))
 
 
 #U=matrix(RR,[[-a,b,0],[b,a,0],[0,0,-1]]) #rough collision with upward normal
@@ -910,10 +894,50 @@ def Billiardtext(wall_segments, N_max, p, v, posvel):
     return (orbitlist)
 
 
+#hk1=[[RR(cos(pi/4)),RR(sin(pi/4)),RR(cos(3*pi/4)),RR(sin(3*pi/4)),-1,1,0,0,1,0],[RR(cos(3*pi/4)),RR(sin(3*pi/4)),RR(cos(5*pi/4)),RR(sin(5*pi/4)),-1,-1,0,0,1,0],[RR(cos(5*pi/4)),RR(sin(5*pi/4)),RR(cos(7*pi/4)),RR(sin(7*pi/4)),1,-1,0,0,1,0],[RR(cos(-pi/4)),RR(sin(-pi/4)),RR(cos(pi/4)),RR(sin(pi/4)),-.03,1,0,0,1,0]]
+
+#hk2=[[0,1,-1+RR(cos(3*pi/4)),1+RR(sin(3*pi/4)),0,1,0,0,1,0],[-1+RR(cos(3*pi/4)),1+RR(sin(3*pi/4)),-1,0,-1,-1,0,0,1,0],[-1,0,-1+RR(cos(5*pi/4)),-1+RR(sin(5*pi/4)),-1,0,0,0,1,0],[-1+RR(cos(5*pi/4)),-1+RR(sin(5*pi/4)),0,-1,1,-1,0,0,1,0],[0,-1,0,1,-5,1,0,0,1,0]]
+
+
+
+# coordinates [angle position, x, y]
+p=[[0,-.5,0],[0,-.1,.1],[0,.1,-1],[0,.1,.1]]
+# velocities
+v=[[0,1,-1],[.1,1,2],[-.1,-1,-1],[-.1,2,-1]]
+
+m=1
+n=1
+
 graph=Graphics()
 graph2=Graphics()
+pointlist=[]
 
+tabsize=4
+
+# wall_segment= [ starting x, starting y, ending x, ending y, starting vector x, starting vector y, 0=circle 1=line for k>2 k=polynomial degree k, 0=not end 1=end, number of component, -(k+1)=pass to wall k 0=smooth 1=rough ]
+
+def ktable(r,l,k):
+    # r is the radius of the disk, l is the length of the flat side of the central disperser, k is the degree of the corners
+    tab=[[tabsize, r-tabsize, tabsize, tabsize-r, 0, 1, 1, 0, 1, 0, 4],[tabsize, tabsize-r, tabsize-r, tabsize,-1,0, 0,0,1,0,-1],[tabsize-r, tabsize, r-tabsize, tabsize, -1, 0, 1, 0, 1, 0,6],[r-tabsize, tabsize, -tabsize, tabsize-r,0,-1, 0,0,1,0,-1],[-tabsize, tabsize-r, -tabsize, r-tabsize, 0, -1, 1, 0, 1, 0,0],[-tabsize, r-tabsize, r-tabsize, -tabsize,1,0, 0,0,1,0,-1],[r-tabsize, -tabsize, tabsize-r, -tabsize, 1, 0, 1, 0, 1, 0, 2],[tabsize-r, -tabsize, tabsize, r-tabsize,0,1, 0,0,1,0,-1] ]
+    tab+=[[l,-l-1,l+1,-l,1,0,k,0,2,0,-1],[l+1,-l,l+1,l,0,1,1,0,2,0,-1],[l+1,l,l,l+1,0,1,k,0,2,0,-1],[l,l+1,-l,l+1,-1,0,1,0,2,0,-1],[-l,l+1,-l-1,l,-1,0,k,0,2,0,-1],[-l-1,l,-l-1,-l,0,-1,1,0,2,0,-1],[-l-1,-l,-l,-l-1,0,-1,k,0,2,0,-1],[-l,-l-1,l,-l-1,1,0,1,0,2,0,-1]]
+    return tab
+
+graph=Graphics()
+#for j in range(1,100):
+#    graph+=list_plot([(j,j)], size=30, color=hue(j/100))
+#graph.show()
     
+    
+
+showtableaxes=False
+
+kmax=4
+kinc=.3
+
+rr=1.8
+ll=.7
+
+
 def ngon(n): 
     tab=[[1,0,RR(cos(2*pi/n)),RR(sin(2*pi/n)),RR(-cos((n-2)/(2*n))),RR(sin((n-2)/(2*n))),1,0,1,0,-1]]
     for i in range(1,n):
@@ -958,6 +982,37 @@ def ngonth2(n,th):
     for i in range(0,n):
         tab+=[[RR((1+th)*cos(i*2*pi/n-pi/n)),RR((1+th)*sin(i*2*pi/n-pi/n)),RR((1+th)*cos((i+1)*2*pi/n-pi/n)),RR((1+th)*sin((i+1)*2*pi/n-pi/n)),RR(cos((i+1)*2*pi/n-pi/n)-cos(i*2*pi/n-pi/n)),RR(sin((i+1)*2*pi/n-pi/n)-sin(i*2*pi/n-pi/n)),1,0,1,0,-1]]
     return tab
+
+
+iterations=100
+
+
+table=[
+[1,0,2,0,1,0,1,0,1,1,-1],
+[2,0,2,1,0,1,1,0,1,1,-1],[2,1,1,2,-1,1,1,0,1,1,-1],
+#[1,1,1,2,0,1,1,0,1,1,-1],
+[1,2,0,2,-1,0,1,0,1,1,-1],[0,2,0,1,0,-1,1,0,1,1,-1],
+[0,1,1,0,1,-1,1,0,1,1,-1 ]]
+
+
+#table=[[.1,1,-.1,1,-1,0,1,0,1,1,-1], 
+#[-.1,1,-1,.1,0,-1,0,0,1,1,-1],
+#[-1,.1,-1,-.1,0,-1,1,0,1,1,-1], 
+#[-1,-.1,-.1,-1,1,0,0,0,1,1,-1],
+#[-.1,-1,.1,-1,1,0,1,0,1,1,-1],
+#[.1,-1,1,-.1,0,1,0,0,1,1,-1],
+#[1,-.1,1,.1,0,1,1,0,1,1,-1],
+#[1,.1,.1,1,-1,0,0,0,1,1,-1]
+#]
+
+
+
+
+#graph+=arrow((1.5,.5), (1.5+1/3*RR(cos(thet2)),.5+1/3*RR(sin(thet2))) ,color='black',width=5,zorder=5,arrowsize=9)
+#graph+=arrow((.5,.5), (.5+1/3*RR(cos(thet)),.5+1/3*RR(sin(thet))) ,color='black',width=5,zorder=5,arrowsize=9)
+
+graph+=graph2
+
 
 
 
@@ -1049,7 +1104,7 @@ def f(BilliardTable=selector(['square',  'triangle', 'pentagon', 'circle', 'elli
         
 #################################################
 ###### Introduction to Billiards: End ###########
-#################################################     
+#################################################        
   
   </script>
 </div>
