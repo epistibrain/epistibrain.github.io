@@ -1044,7 +1044,7 @@ graph.show(aspect_ratio=1, axes=False, figsize=10)
 
 
 @interact
-def f(BilliardTable=selector(['square',  'triangle', 'pentagon', 'circle', 'ellipse'],buttons=True,  label='Select billiard table shape'),  MassType=selector(['Point Mass',  'Uniform', 'Hollow'], buttons=True,  label='Select mass distribution of ball'), Collisions=selector([2,  5, 10, 50, 100, 500, 10000],buttons=True,  label='Number of Collisions'), angle=selector([-85, -70, -45,  -20, -10, -5, 0, 5, 10, 20, 45, 70, 85],buttons=True,  label='Angle in Degrees'),spin=1):
+def f(BilliardTable=selector(['square',  'triangle', 'pentagon', 'circle', 'ellipse'],buttons=True,  label='Select billiard table shape'),  MassType=selector(['Point Mass',  'Uniform', 'Hollow'], buttons=True,  label='Select mass distribution of ball'), Collisions=selector([2,  5, 10, 50, 100, 500, 10000],buttons=True,  label='Number of Collisions'), angle=selector([-85, -70, -45,  -20, -10, -5, 0, 5, 10, 20, 45, 70, 85],buttons=True,  label='Angle in Degrees'),spin=1,  auto_update=True):
     
     if MassType=='Point Mass':
         gamma=0
