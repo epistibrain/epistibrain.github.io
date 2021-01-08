@@ -1131,7 +1131,7 @@ def f(BilliardTable=selector(['square',  'triangle', 'pentagon', 'circle', 'elli
             else:
                 curcol='red'
             graphEll+=plot(line([(states[j,1],states[j,2]),(states[j+1,1],states[j+1,2])],color=curcol))
-        graphEll+=arrow((x0,y0), (x0+vx1/3,y0+vy1/3) ,color='red',width=5,zorder=5,arrowsize=9)
+        graphEll+=arrow((x0,y0), (x0+vx1/3,y0+vy1/3) ,color='magenta',width=5,zorder=5,arrowsize=9)
         
         graphEll.show(axes=False)
         
