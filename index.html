@@ -83,8 +83,8 @@
 
   <h2 id="billiards">An Interactive Introduction to Mathematical Billiards</h2>    
   <font face="Verdana" size="4"> <p>    One of my areas of research is billiard dynamics, using both analytic approaches and numerical simulation. This is designed to be an interactive 
-  introduction for students or anyone who is interested. While it turns out that such dynamical systems are broadly applicable, as the name suggests 
-  they may be visualized as the paths of billiard balls as the move until they collide with a wall and then bounce off. For our model, we assume no energy
+  introduction for students or anyone who is interested. While it turns out that such dynamical systems are broadly applicable, as the name suggests, 
+  they may be visualized as the paths of billiard balls as they move until they collide with a wall and then bounce off. For our model, we assume no energy
   is lost, so they never slow and stop. While our table might resemble a rectangular billiard table (without pockets), more generally we consider tables of any shape you can imagine.</p></font><br />
 
 Choices for the simulation:
@@ -1048,14 +1048,16 @@ graph+=graph2
 
 
 @interact
-def f(BilliardTable=selector(['square',  'triangle', 'pentagon', 'circle', 'ellipse'],buttons=True,  label='Select billiard table shape'),  MassType=selector(['Point Mass',  'Uniform', 'Hollow'], buttons=True,  label='Select mass distribution of ball'), Collisions=selector([2,  5, 10, 50, 100, 500, 2000],buttons=True,  label='Number of Collisions'), angle=selector([-70, -45,  -23, -10, -5, 0, 5, 10, 23, 45, 70],buttons=True,  label='Angle in Degrees'),spin=slider(-5,5,step_size=.2, default=0, label='Spin of the ball'), auto_update=True):
+def f(BilliardTable=selector(['square',  'triangle', 'pentagon', 'circle', 'ellipse'],buttons=True,  label='Select billiard table shape'),  MassType=selector(['Point Mass',  'Uniform', 'Hollow', 'Other'], buttons=True,  label='Select mass distribution of ball'), Collisions=selector([2,  5, 10, 50, 100, 500, 2000],buttons=True,  label='Number of Collisions'), angle=selector([-70, -45,  -23, -10, -5, 0, 5, 10, 23, 45, 70],buttons=True,  label='Angle in Degrees'),spin=slider(-5,5,step_size=.2, default=0, label='Spin of the ball'), auto_update=True):
     
     if MassType=='Point Mass':
         gamma=0
     elif MassType=='Uniform':
         gamma=RR(1/2^.5)
-    else:
+    elif MassType=='Hollow':
         gamma=1
+    else:
+        gamma=.6180
 
     if -90<angle<90:
         thet=angle*2*np.pi/360
