@@ -1127,9 +1127,9 @@ def f(BilliardTable=selector(['square',  'triangle', 'pentagon', 'circle', 'elli
     
         for j in range(0,Collisions-1):
             if (-1)^j>0:
-                curcol='blue'
+                curcol='purple'
             else:
-                curcol='red'
+                curcol='yellow'
             graphEll+=plot(line([(states[j,1],states[j,2]),(states[j+1,1],states[j+1,2])],color=curcol))
         graphEll+=arrow((x0,y0), (x0+vx1/3,y0+vy1/3) ,color='magenta',width=5,zorder=5,arrowsize=9)
         
