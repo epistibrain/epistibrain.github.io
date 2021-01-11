@@ -112,8 +112,12 @@ import math
 ############## ellipse import ###################
 #################################################
 
-BorderColor='mediumseagreen'
-TrajColor='midnightblue'
+#BorderColor='mediumseagreen'
+#TrajColor='midnightblue'
+TrajColor='purple'
+BorderColor='purple'
+TrajColor2='yellow'
+ArrowColor='purple'
 
 # The graphics file where we store the images
 graph=Graphics()
@@ -1127,11 +1131,11 @@ def f(BilliardTable=selector(['square',  'triangle', 'pentagon', 'circle', 'elli
     
         for j in range(0,Collisions-1):
             if (-1)^j>0:
-                curcol='purple'
+                curcol=TrajColor
             else:
-                curcol='yellow'
+                curcol=TrajColor2
             graphEll+=plot(line([(states[j,1],states[j,2]),(states[j+1,1],states[j+1,2])],color=curcol))
-        graphEll+=arrow((x0,y0), (x0+vx1/3,y0+vy1/3) ,color='magenta',width=5,zorder=5,arrowsize=9)
+        graphEll+=arrow((x0,y0), (x0+vx1/3,y0+vy1/3) ,color=ArrowColor,width=5,zorder=5,arrowsize=9)
         
         graphEll.show(axes=False)
         
