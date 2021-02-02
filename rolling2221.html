@@ -1,0 +1,361 @@
+
+
+
+
+<script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"></script>
+<script>sagecell.makeSagecell({"inputLocation": ".sage",
+                               hide: ["editor","evalButton"],
+                       autoeval: true});</script>
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>Chris Cox</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/paper/bootstrap.min.css" type="text/css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+</head>
+<body style="background-color:#e6e6ff";>
+  
+
+  
+    <nav class="navbar navbar-default navbar-static-top">
+    <nav class="navbar navbar-light" style="background-color: #e6e6ff;">
+    <div class="container">
+      <div class="navbar-header">
+      	<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+                <a class="navbar-brand" href="https://epistibrain.github.io/">Chris Cox</a> 
+            	</div>
+    	
+
+        
+        
+    <div>
+  </nav>
+ 
+      <p><img src="bannersmall.png" class="img-responsive center-block" width="1500"  /></p>
+      
+  
+ 
+
+      
+      
+  <div class="sage">
+  <script type="text/x-sage">
+# New Billiards 2021 including rolling systems
+# Basic rolling billiards
+
+# Imports
+import numpy as np
+
+# Relatively constant constants
+eps=0.0000000001 # 
+BorderColor='midnightblue' #billiard border
+BorderThickness=4 #thickness of boundary
+TrajCol1='cornflowerblue' #trajectory colors
+TrajCol2='darkolivegreen'
+graph=Graphics()
+
+
+###########################################################################
+# OLD CODE
+###########################################################################
+# There are probably more efficient ways to code everything in this section
+###########################################################################
+###########################################################################
+# Create a rotation matrix of angle x
+# Note that this also handles the flip in the rotational axis
+def rot(x):
+    return matrix(RR,[[-1,0,0],[0,cos(x),-sin(x)],[0,sin(x),cos(x)]])
+# create the no-slip/roling transformation matrix
+def trans(e):
+    a=np.cos(np.pi*eta)
+    b=np.sin(np.pi*eta)
+    return matrix(RR,[[-a,b,0],[b,a,0],[0,0,-1]]) #rough collision with upward normal
+# This draws the table
+def draw_table(wall_segments):
+    newgraph=Graphics()
+    for i in range(0,len(wall_segments)):
+        if wall_segments[i][4]==1: # draws any walls that are line segments
+            newgraph+=plot(line([(wall_segments[i][0],wall_segments[i][1]),(wall_segments[i][2],wall_segments[i][3])],color=BorderColor,thickness=BorderThickness))
+#        if wall_segments[i][4]==0: # draws arcs--not currently used
+#            u1=qb(wall_segments[i])
+#            u2=qe(wall_segments[i])
+#            u3=ub(wall_segments[i])
+#            u4=ue(u1,u2,u3)
+#            C=center(u1,u2,u3)
+#            arc_angle=RR(theta(u1,u2,u3,u4))
+#            radius=1/abs(curv(u1,u2,u3))
+#            x0=u1[0]
+#            y0=u1[1]
+#            startvec=diff(C,u1)
+#            alpha=getangle(startvec)
+#            for j in range(0,res+1):
+#                omega=(-1)^(circ_or(u3,diff(u1,u2)))*j/res*arc_angle
+#                x1=radius*cos(alpha+omega)+C[0]
+#                y1=radius*sin(alpha+omega)+C[1]
+#                L=line([(x0,y0),(x1,y1)],color='black')
+#                newgraph=newgraph+plot(L)
+#                x0=x1
+#                y0=y1
+#                #show(newgraph)
+#        if wall_segments[i][4]>1: # draws walls of higher order polynomials--not currently use
+#            k=wall_segments[i][6]
+#            x0=wall_segments[i][0]
+#            y0=wall_segments[i][1]
+#            xe=wall_segments[i][2]
+#            ye=wall_segments[i][3]
+#            if xe<x0 and ye>y0: 
+#                for j in range(1,res+1):
+#                    x1=-j/res+wall_segments[i][0]
+#                    y1=ye-(x1-xe)^k
+#                    L=line([(x0,y0),(x1,y1)],color='black')
+#                    newgraph=newgraph+plot(L)
+#                    x0=x1
+#                    y0=y1
+#            if xe<x0 and ye<y0: 
+#                for j in range(1,res+1):
+#                    x1=-j/res+wall_segments[i][0]
+#                    y1=wall_segments[i][1]-(-x1+wall_segments[i][0])^k
+#                    L=line([(x0,y0),(x1,y1)],color='black')
+#                    newgraph=newgraph+plot(L)
+#                    x0=x1
+#                    y0=y1
+#            if xe>x0 and ye<y0: 
+#                for j in range(1,res+1):
+#                    x1=j/res+wall_segments[i][0]
+#                    y1=ye+(-1)^k*(-xe+x1)^k
+#                    L=line([(x0,y0),(x1,y1)],color='black')
+#                    newgraph=newgraph+plot(L)
+#                    x0=x1
+#                    y0=y1
+#            if xe>x0 and ye>y0: 
+#                for j in range(1,res+1):
+#                    x1=j/res+wall_segments[i][0]
+#                    y1=wall_segments[i][1]+(x1-wall_segments[i][0])^k
+#                    L=line([(x0,y0),(x1,y1)],color='black')
+#                    newgraph=newgraph+plot(L)
+#                    x0=x1
+#                    y0=y1
+    return newgraph
+# a simple vectore length function
+def veclen(u):
+    return (u[0]^2+u[1]^2)^.5
+# return the angle of the vector A relative to the pos x-axis
+def getangle(A):
+    if A[0]>=0:
+        if A[1]>=0:
+            return (arcsin((A[1]-eps)/veclen(A)))
+        if A[1]<0:
+            return (arcsin((A[1]+eps)/veclen(A)))
+    else:
+         return RR(pi-arcsin((A[1]-eps)/veclen(A)))
+# Some table generators
+#def ngon(n): 
+#    tab=[[1,0,RR(cos(2*pi/n)),RR(sin(2*pi/n)),RR(-cos((n-2)/(2*n))),RR(sin((n-2)/(2*n))),1,0,1,0,-1]]
+#    for i in range(1,n):
+#        tab+=[[RR(cos(i*2*pi/n)),RR(sin(i*2*pi/n)),RR(cos((i+1)*2*pi/n)),RR(sin((i+1)*2*pi/n)),RR(cos((i+1)*2*pi/n)-cos(i*2*pi/n)),RR(sin((i+1)*2*pi/n)-sin(i*2*pi/n)),1,0,1,0,-1]]
+#    return tab
+# This one currently used for regular polygons    
+def ngonthrshift(n,th): #n=number of sides, inscribed circle of radius 1+th
+    tab=[[RR((1+th)*cos(pi/n)),RR(-(1+th)*sin(pi/n)),RR((1+th)*cos(pi/n)),RR((1+th)*sin(pi/n)),1,2]]
+    for i in range(1,n):
+        tab+=[[RR((1+th)*cos(i*2*pi/n-pi/n)), RR((1+th)*sin(i*2*pi/n-pi/n)),RR((1+th)*cos((i+1)*2*pi/n-pi/n)),RR((1+th)*sin((i+1)*2*pi/n-pi/n)),1,2]]
+    return tab
+#####################################################################################################
+#####################################################################################################
+#####################################################################################################
+
+
+
+
+# Billiard updating routines
+#############################
+# Free movement between edges
+def Free(state): #takes a state, returns the next state
+    st=state.copy() # creates a new state which will be a modified version of input state returned as next state
+    x0=state[1]
+    y0=state[2]    
+    vx=state[4]
+    vy=state[5]
+    curwall=st[10] #current wall
+    if vx==0: #avoids division by zero
+        vx=eps
+    for i in range(0,len(table)):
+        if i!=curwall: #Don't check the current wall
+            a=table[i][0]
+            b=table[i][1]
+            c=table[i][2]
+            d=table[i][3]
+            if sign((a-x0)*vy-(b-y0)*vx)!=sign((c-x0)*vy-(d-y0)*vx): #check sign of cross product to get the new wall
+                if c==a: # division by zero check
+                    a=a+eps
+                if b==d:
+                    b=b+eps
+                st[10]=i #reset current wall
+                st[1]=(c*(d-b)/(c-a)+y0-vy*x0/vx-d)/((d-b)/(c-a)-vy/vx) #new x value
+                st[2]=d+(d-b)/(c-a)*(st[1]-c) #new y value
+                deltatime=((st[1]-x0)^2+(st[2]-y0)^2)^.5/(vx^2+vy^2)^.5 #change in time
+                st[0]+=deltatime*st[3] # rotational position
+                st[7]=state[7]+((st[1]-x0)^2+(st[2]-y0)^2)^.5/(vx^2+vy^2)^.5 #adjust time 
+    return(st)
+
+# Roll to new state at edge
+def Roll(state):
+    st=state.copy()
+    V=matrix(RR,3,1)
+    Vtem=matrix(RR,3,1)
+    V[0,0]=st[3]#*(-1)^st[6]
+    spin=V[0,0]
+    st[6]=1-st[6] #0=top sheet, 1=bottom sheet
+    wall=table[int(st[10])]
+    aa=wall[2]-wall[0]
+    bb=wall[3]-wall[1]
+    omega=getangle((aa,bb))
+    # print(st[10],'omega',omega)
+    U1=rot(omega)
+    U2=rot(-omega)
+    V[1,0]=st[4]
+    V[2,0]=st[5]
+    Vtem=rot(-omega)*V
+    ue=Vtem[1,0]
+    un=Vtem[2,0]
+    D=R/(eta*abs(un))*((1-np.cos(np.pi*eta))*spin+np.sin(np.pi*eta)*ue)*(-1)^st[6]
+    U=trans(eta)
+    V=rot(omega)*U*rot(-omega)*V
+    st[3]=V[0,0]
+    st[4]=V[1,0]
+    st[5]=V[2,0]
+    mag=np.sqrt(aa^2+bb^2)
+    st[1]=st[1]+D*aa/mag
+    # If the displacement rolls past a corner, this check stops at the corner and gives an error
+    #if aa>0 and (st[1]+D*aa/mag)>max(wall[0],wall[2]):
+    #    st[1]=max(wall[0],wall[2])-eps
+    #    print('Error: roll over') 
+    #if aa<0 and (st[1]+D*aa/mag)<min(wall[0],wall[2]):
+    #    st[1]=min(wall[0],wall[2])+eps
+    #    print('ERROR: roll over')  
+    st[2]=st[2]+D*bb/mag
+    #if bb>0 and (st[2]+D*bb/mag)>max(wall[1],wall[3]):
+    #    st[2]=max(wall[1],wall[2])-eps
+    #if bb<0 and (st[2]+D*aa/mag)<min(wall[1],wall[3]):
+    #    st[2]=min(wall[1],wall[3])+eps
+    return(st)
+
+
+# Catalogue of tables
+# Tables are lists of walls oriented counterclockwise
+# Each wall is a list [starting x, starting y, ending x, ending y, shape: 0=arc 1=line,collision type: 0=specular 1=no-slip 2=rolling]
+# Currenty the 
+# Below are some simple tables with suitable initial conditions. Uncomment to use.
+
+#Table: Equilateral Triangle
+#sides=3
+#table=ngonthrshift(sides,0) #creates a regular polygon table of n sides. The second parameter is radius adjustment, with 0=unit
+#x0=np.cos(pi/(sides)) #we start on the vertical edge on the right
+#y0=0#-np.sqrt(2)/2
+#thet=np.pi/7 #starting angle
+#vx0=-RR(np.cos(thet))
+#vy0=RR(np.sin(thet))
+#startwall=0
+
+# Table: Square
+sides=4
+table=ngonthrshift(sides,0)
+x0=np.cos(pi/(sides)) #we start on the vertical edge on the right
+y0=0
+thet=np.pi/7 #starting angle
+vx0=-RR(np.cos(thet))
+vy0=RR(np.sin(thet))
+startwall=0
+
+# Table: Regular Pentagon
+#sides=5
+#table=ngonthrshift(sides,0)
+#x0=np.cos(pi/(sides)) #we start on the vertical edge on the right
+#y0=0
+#thet=np.pi/7 #starting angle
+#vx0=-RR(np.cos(thet))
+#vy0=RR(np.sin(thet))
+#startwall=0
+
+# Table: long strip vertical
+#L=100 # length of long strip
+#table=[[1,-L,1,L,1,2],[1,L,-1,L,1,2],[-1,L,-1,-L,1,2],[-1,-L,1,-L,1,2]]
+#x0=1 #starting x position
+#y0=0 #starting y position
+#vx0=-1 #Initial velocity; note that the velocity is not normalized  
+#vy=0.1 #
+#startwall=1  
+
+
+# frequently altered constants 
+N=200 #number of iterations, including free movement and roll in one iteration
+graph=draw_table(table)
+R=.2 #ball radius
+#eta=.3524 #pp for pentagon
+eta=.5 #pp eta for square
+#eta=RR(arccos(1/3)/np.pi) #pp for triangle
+w0=1 # Note that initial spin (rotational velociity) doesn't depend on the table
+
+# Initializing the states array
+# States has N rows (0 to N-1), row m being the state after collision m
+# For the middle entry, 0 is the preroll and 1 the postroll state
+# For the third entry, wach state has eleven components: 
+# [0 rotational displacement, 1 x pos, 2  y pos, 3 rot vel, 4 x vel, 5 y vel, 
+# 6 sheet=0 (top) or 1 (bottom), 7 t=time, 8 s=arclength, 9 phi=angle relative to inward normal, 10 wall number] 
+# 8 and 9 are not implemented
+#
+states=np.zeros(shape=(N,2,11))
+states[0,0]=[0,x0,y0,w0,vx0,vy0,0,0,0,0,startwall]
+states[0,1]=[0,x0,y0,w0,vx0,vy0,1,0,0,0,startwall]
+
+# Main routine
+for i in range(1,N):
+    states[i,0]=Free(states[i-1,1]) #Update free motion
+    states[i,1]=Roll(states[i,0])   #Update rolling over edge
+
+
+# Draw the trajectories
+for i in range(0,N-1):
+    # top and bottom trajectory color
+    if states[i,0,6]==0:
+        TrajCol=TrajCol1
+    else:
+        TrajCol=TrajCol2
+    graph+=plot(line([(states[i,1,1],states[i,1,2]),(states[i+1,0,1],states[i+1,0,2])],color=TrajCol,thickness=1))
+    # rolling along the edge is shown in tomato red
+    graph+=plot(line([(states[i,0,1],states[i,0,2]),(states[i,1,1],states[i,1,2])],color='tomato',thickness=1))
+            
+
+graph.show(aspect_ratio=1, axes=False)     
+  
+  </script>
+
+     </p></font><br />
+              
+
+
+
+  
+    <footer class="footer navbar-static-bottom">
+     <div class="container">
+     <br><br>
+     <p class="text-muted small">Last modified February 2021</p>
+     </div>
+  </footer>
+    
+      
+
